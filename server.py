@@ -1,23 +1,30 @@
 import socket
+import os
 
-s = socket.socket()
-print('socket created')
-
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port = 1234
 
-s.bind(('',port))
+server.bind(('', port))
+print(f'Socket bound to port {port}')
 
-print(f'socket binded to port {port}')
-
-s.listen(10)
-print('socket listening')
-
+server.listen(10)
+print('Socket listening')
 while True:
+    client, addr = server.accept()
 
-    c, addr = s.accept()
+    file_name = client.recv(1042).decode()
+    file_size = int(client.recv(1042).decode())
 
-    print(f'connected to {addr}')
+    file_path = os.path.join(r'c:\Users\97254\Desktop\PythonServerData', file_name)
 
-    c.send(b'thanks for connecting')
+    with open(file_path, 'wb') as file:
+        received_data = b''
+        total_received = 0
+        while total_received < file_size:
+            data = client.recv(1042)
+            if not data:
+                break
+            file.write(data)
+            total_received += len(data)
 
-    c.close()
+    client.close()

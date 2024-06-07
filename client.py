@@ -1,11 +1,23 @@
 import socket
+import os
 
-s = socket.socket()
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 port = 1234
 
-s.connect(('127.0.0.1', port))
+client.connect(('localhost', port))
 
-print(s.recv(4096))
+file_path = input('Enter path to a file that you want to upload: ')
+file_name = os.path.basename(file_path)
+file_size = os.path.getsize(file_path)
 
-s.close()
+client.send(file_name.encode())
+client.send(str(file_size).encode())
+
+with open(file_path, 'rb') as file:
+    data = file.read(2048)
+    while data:
+        client.send(data)
+        data = file.read(2048)
+
+client.close()
